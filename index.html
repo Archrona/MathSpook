@@ -1,0 +1,112 @@
+﻿<!DOCTYPE html>
+
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml">
+<head>
+	<meta charset="utf-8" />
+	<title>MathSpook Renderer</title>
+
+	<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/katex.css" integrity="sha384-qCEsSYDSH0x5I45nNW4oXemORUZnYFtPy/FqB/OjqxabTMW5HVaaH9USK4fN3goV" crossorigin="anonymous">
+	<script src="https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/katex.js" integrity="sha384-YFVvRUwgqxkAVN9bmAVLsKilmOKfQLyUx0ZlmDNs0aBUTsvMLnRxE3Km0NrZa0i9" crossorigin="anonymous"></script>
+
+	<style>
+
+		
+
+		table {
+			border-collapse: collapse;
+			border-spacing: 0;
+		}
+
+		body {
+			background-color: #202020;
+			color: #EEE;
+			box-sizing: border-box;
+		}
+
+		#content {
+			width: 90%;
+			margin: auto;
+			font-size: 20px;
+			font-family: Georgia, "Times New Roman", serif;
+			line-height: 1.7;
+			padding-top: 30px;
+			padding-bottom: 30px;
+		}
+
+		#content p {
+			margin-bottom: 16px;
+		}
+
+		b {
+			font-weight: 700;
+		}
+
+		em {
+			font-style: italic;
+		}
+
+		.line {
+			margin-top: 6px;
+			margin-bottom: 14px;
+			line-height: 1.7;
+			text-indent: 20px;
+		}
+
+		h1 {
+			font-size: 150%;
+		}
+
+		h2 {
+			font-size: 120%;
+		}
+
+	</style>
+</head>
+<body>
+	<div id="content">
+
+	</div>
+
+	<script>
+		"use strict";
+
+		function hash(str) {
+			let h = 0, i, chr;
+			for (i = 0; i < str.length; i++) {
+				chr = str.charCodeAt(i);
+				h = ((h << 5) - h) + chr;
+		        h |= 0;
+			}
+		    return h.toString(36) + str.length;
+		}
+
+		function renderUpdate(lines) {
+			let hashes = lines.map(x => hash(x));
+			let parent = document.getElementById("content");
+			
+		    while (parent.firstChild) parent.removeChild(parent.lastChild);
+
+			for (let i = 0; i < lines.length; i++) {
+				let el = document.createElement("div");
+				el.className = "line";
+				el.innerHTML = lines[i];
+				el.id = "H" + hashes[i];
+				parent.appendChild(el);		
+			}
+
+			for (let node of parent.querySelectorAll("div script")) {
+				console.log(node);
+				let el = document.createElement("span");
+				let display = node.getAttribute("type") == "text/kdmath";
+				el.className = display ? "dmath" : "math";
+				katex.render(node.text, el, { throwOnError: false, displayMode: display });
+				node.replaceWith(el);
+			}
+		}
+
+		window.chrome.webview.addEventListener('message', (msg) => {
+			renderUpdate(msg.data);
+		});
+	</script>
+</body>
+</html>
